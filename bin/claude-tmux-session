@@ -1,0 +1,66 @@
+#!/usr/bin/env bash
+# claude-tmux-session — resume each tmux pane's own Claude conversation after a restore.
+#
+#   start     Claude SessionStart hook: tag this pane with its conversation id
+#   end       Claude SessionEnd hook: clear the tag
+#   save      tmux-resurrect post-save hook: write pane -> conversation map
+#   resume    run by tmux-resurrect in a restored pane: resume that pane's conversation
+#   backfill  tag panes whose Claude was started before this existed
+#
+# Panes are keyed by session:window.pane, which is what tmux-resurrect restores.
+set -u
+MAP="${XDG_STATE_HOME:-$HOME/.local/state}/claude-tmux/sessions.tsv"
+JQ=$(command -v jq || echo jq)
+
+pane_key() { tmux display -p -t "$1" '#{session_name}:#{window_index}.#{pane_index}'; }
+
+tag() { # pane id cwd
+    tmux set -p -t "$1" @claude_session "$2"
+    tmux set -p -t "$1" @claude_cwd "$3"
+}
+
+case ${1:-} in
+    start)
+        [[ -n ${TMUX_PANE:-} ]] || exit 0
+        input=$(cat)
+        id=$($JQ -r '.session_id // empty' <<<"$input")
+        cwd=$($JQ -r '.cwd // empty' <<<"$input")
+        [[ -n $id ]] && tag "$TMUX_PANE" "$id" "${cwd:-$PWD}"
+        ;;
+    end)
+        [[ -n ${TMUX_PANE:-} ]] || exit 0
+        cat >/dev/null
+        tmux set -p -u -t "$TMUX_PANE" @claude_session
+        tmux set -p -u -t "$TMUX_PANE" @claude_cwd
+        ;;
+    save)
+        mkdir -p "$(dirname "$MAP")"
+        tmux list-panes -a -F '#{session_name}:#{window_index}.#{pane_index}	#{@claude_session}	#{@claude_cwd}	#{pane_current_command}' |
+            awk -F'\t' '$2 != "" && $4 == "claude" {print $1 "\t" $2 "\t" $3}' > "$MAP.tmp" && mv "$MAP.tmp" "$MAP"
+        ;;
+    resume)
+        key=$(pane_key "${TMUX_PANE:-}" 2>/dev/null)
+        line=$(awk -F'\t' -v k="$key" '$1 == k {print; exit}' "$MAP" 2>/dev/null)
+        if [[ -n $line ]]; then
+            IFS=$'\t' read -r _ id cwd <<<"$line"
+            [[ -n ${CLAUDE_TMUX_DRY:-} ]] && { echo "would run: cd $cwd && claude --resume $id"; exit 0; }
+            cd "$cwd" 2>/dev/null
+            exec claude --resume "$id"
+        fi
+        [[ -n ${CLAUDE_TMUX_DRY:-} ]] && { echo "would run: claude --resume (picker)"; exit 0; }
+        exec claude --resume          # unknown pane: fall back to the picker
+        ;;
+    backfill)
+        tmux list-panes -a -F '#{pane_id} #{pane_pid}' | while read -r pane shell; do
+            for pid in $(pgrep -P "$shell" -x claude); do
+                reg="$HOME/.claude/sessions/$pid.json"
+                [[ -f $reg ]] || continue
+                id=$($JQ -r '.sessionId // empty' "$reg"); cwd=$($JQ -r '.cwd // empty' "$reg")
+                [[ -n $id ]] && tag "$pane" "$id" "$cwd" && echo "$(pane_key "$pane")  $id  $cwd"
+            done
+        done
+        ;;
+    *)
+        echo "usage: claude-tmux-session start|end|save|resume|backfill" >&2; exit 2 ;;
+esac
+exit 0

@@ -1,0 +1,18 @@
+#!/usr/bin/env bash
+# claude-tmux-state — tag this tmux window with the Claude Code session state for the status bar.
+# Called by Claude Code hooks (~/.claude/settings.json): working | waiting | done | clear
+[[ -n ${TMUX_PANE:-} ]] || exit 0   # not inside tmux
+case ${1:-} in
+    working|waiting)
+        tmux set -w -t "$TMUX_PANE" @claude_state "$1" ;;
+    done)
+        # Nothing to flag if you're already looking at this window
+        if [[ $(tmux display -p -t "$TMUX_PANE" '#{&&:#{window_active},#{session_attached}}') == 1 ]]; then
+            tmux set -w -u -t "$TMUX_PANE" @claude_state
+        else
+            tmux set -w -t "$TMUX_PANE" @claude_state done
+        fi ;;
+    clear)
+        tmux set -w -u -t "$TMUX_PANE" @claude_state ;;
+esac
+exit 0

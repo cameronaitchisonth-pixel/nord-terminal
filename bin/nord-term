@@ -1,0 +1,105 @@
+#!/usr/bin/env bash
+# nord-term — switch the terminal setup between Nord light and dark.
+#
+#   nord-term light|dark|toggle   set the mode
+#   nord-term apply               re-apply the current mode (run once after installing)
+#   nord-term status              print the current mode
+#   nord-term watch               follow GNOME's light/dark setting (keep running, e.g. as a user service)
+#
+# Where the mode comes from, in order:
+#   GNOME   org.gnome.desktop.interface color-scheme  (light/dark here switches the desktop too,
+#           which is what Ghostty follows)
+#   macOS   the system appearance (switch it in System Settings, then run `nord-term apply`)
+#   other   ~/.local/state/nord-term/mode  (default dark)
+#
+# What follows the mode: Ghostty (by itself), tmux, Neovim, zsh (fzf + suggestions), Starship,
+# bat, delta, lazygit, btop and, if its Nord themes are installed, Claude Code.
+set -u
+
+STATE="${XDG_STATE_HOME:-$HOME/.local/state}/nord-term/mode"
+CACHE="${XDG_CACHE_HOME:-$HOME/.cache}/nord-term"
+RUNTIME="${XDG_RUNTIME_DIR:-/tmp}/nord-term-current"
+CONF="$HOME/.config"   # same place install.sh and tmux.conf use
+
+# Prefer the system gsettings: conda ships one that can't see GNOME's settings.
+GSETTINGS=$(command -v /usr/bin/gsettings || command -v gsettings || true)
+gnome() { [[ -n $GSETTINGS ]] && "$GSETTINGS" get org.gnome.desktop.interface color-scheme >/dev/null 2>&1; }
+
+mode() {
+    if gnome; then
+        [[ $("$GSETTINGS" get org.gnome.desktop.interface color-scheme) == "'prefer-dark'" ]] && echo dark || echo light
+    elif [[ $(uname) == Darwin ]]; then
+        [[ $(defaults read -g AppleInterfaceStyle 2>/dev/null) == Dark ]] && echo dark || echo light
+    elif [[ -f $STATE ]]; then
+        [[ $(<"$STATE") == light ]] && echo light || echo dark
+    else
+        echo dark
+    fi
+}
+
+set_mode() {
+    if gnome; then
+        "$GSETTINGS" set org.gnome.desktop.interface color-scheme "'prefer-$1'"
+    elif [[ $(uname) == Darwin ]]; then
+        osascript -e "tell application \"System Events\" to tell appearance preferences to set dark mode to $([[ $1 == dark ]] && echo true || echo false)"
+    else
+        mkdir -p "$(dirname "$STATE")" && echo "$1" > "$STATE"
+    fi
+}
+
+apply() {
+    local m link target
+    m=$(mode)
+
+    # Tools that read their config at startup: point each at its light/dark variant
+    while read -r link target; do
+        target=${target//@/$m}
+        [[ -e $target ]] && [[ $(readlink "$link") != "$target" ]] && ln -sfn "$target" "$link"
+    done <<EOF
+$CONF/bat/config $CONF/bat/config-@
+$CONF/delta/current.gitconfig $CONF/delta/nord-@.gitconfig
+$CONF/lazygit/config.yml $CONF/lazygit/config-@.yml
+$CONF/btop/themes/nord-auto.theme $CONF/btop/themes/nord-@.theme
+EOF
+
+    # Starship: zsh switches STARSHIP_CONFIG to this light copy (the real file stays untouched)
+    if [[ -f $CONF/starship.toml ]]; then
+        mkdir -p "$CACHE"
+        sed 's/^palette = .*/palette = "nord_light"/' "$CONF/starship.toml" > "$CACHE/starship-light.toml"
+    fi
+
+    # Claude Code: explicit theme, because its "auto" can't see the switch inside tmux
+    local cs="$HOME/.claude/settings.json" ct="custom:nord-$m"
+    if [[ -f $cs && -f $HOME/.claude/themes/nord-$m.json ]] && command -v jq >/dev/null &&
+        [[ $(jq -r '.theme // ""' "$cs") != "$ct" ]]; then
+        jq --arg t "$ct" '.theme = $t' "$cs" > "$cs.nord-tmp" && jq -e . "$cs.nord-tmp" >/dev/null &&
+            cat "$cs.nord-tmp" > "$cs"
+        rm -f "$cs.nord-tmp"
+    fi
+
+    # zsh reads this before each prompt (fzf colors, suggestions, Starship palette)
+    echo "$m" > "$RUNTIME"
+
+    # tmux status bar colors (layout lives in ~/.tmux.conf)
+    if tmux ls >/dev/null 2>&1; then
+        tmux source-file "$CONF/tmux/nord-$m.conf"
+    fi
+
+    # Running Neovim instances re-check the mode on SIGUSR1 (nvim/lua/nordmode.lua)
+    pkill -USR1 -u "$USER" -x nvim 2>/dev/null || true
+}
+
+watch() {
+    apply
+    gnome || { echo "nord-term watch: needs GNOME (gsettings)" >&2; exit 1; }
+    "$GSETTINGS" monitor org.gnome.desktop.interface color-scheme | while read -r _; do apply; done
+}
+
+case ${1:-toggle} in
+    dark|light) set_mode "$1"; apply ;;
+    toggle) [[ $(mode) == dark ]] && "$0" light || "$0" dark ;;
+    apply)  apply ;;
+    status) mode ;;
+    watch)  watch ;;
+    *)      echo "usage: nord-term [light|dark|toggle|apply|status|watch]" >&2; exit 2 ;;
+esac

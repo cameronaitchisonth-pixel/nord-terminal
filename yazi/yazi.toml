@@ -1,0 +1,13 @@
+# yazi — colors come from the terminal's Nord palette, so it follows light/dark automatically
+[mgr]
+show_hidden = false
+sort_by = "natural"
+sort_dir_first = true
+linemode = "size"
+show_symlink = true
+
+# Open text and code in Neovim (Enter, or `o`); `O` shows the other "open with" choices
+[opener]
+edit = [
+	{ run = "nvim %s", desc = "nvim", for = "unix", block = true },
+]

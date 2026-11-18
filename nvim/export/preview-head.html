@@ -1,0 +1,18 @@
+<!-- Live preview only: dark mode follows the system, and the page reloads itself to pick up edits -->
+<style>
+@media (prefers-color-scheme: dark) {
+  :root { --fg: #D8DEE9; --muted: #A3ABBA; --accent: #88C0D0; --rule: #434C5E; --code-bg: #3B4252; }
+  body { background: #2E3440; }
+  code, pre { color: #E5E9F0; }
+}
+</style>
+<script>
+  addEventListener("load", () => {
+    const y = sessionStorage.getItem("mdpreview-y");
+    if (y !== null) scrollTo(0, +y);
+  });
+  setInterval(() => {
+    sessionStorage.setItem("mdpreview-y", scrollY);
+    location.reload();
+  }, 1000);
+</script>

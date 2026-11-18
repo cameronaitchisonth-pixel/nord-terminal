@@ -1,0 +1,10 @@
+# delta — Nord dark (nord-term points current.gitconfig here)
+[delta]
+    dark = true
+    syntax-theme = Nord
+    line-numbers-zero-style = "#4C566A"
+    line-numbers-minus-style = "#BF616A"
+    line-numbers-plus-style = "#A3BE8C"
+    file-style = "#88C0D0 bold"
+    hunk-header-style = "file line-number syntax"
+    hunk-header-decoration-style = "#4C566A box"

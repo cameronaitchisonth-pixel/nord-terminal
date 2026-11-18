@@ -1,0 +1,27 @@
+#!/usr/bin/env bash
+# nord-eyecandy: rotate terminal animations in Nord colors (for a wallpaper monitor slot).
+#
+#   nord-eyecandy [minutes-per-scene]   default 5; skips tools that aren't installed
+#
+# Scenes: tty-clock, cbonsai, pipes.sh, cava (music bars; only moves while audio plays).
+# They use the terminal's ANSI colors, which follow the Nord light/dark palette.
+set -u
+MINUTES=${1:-5}
+PIPES="$HOME/.local/bin/pipes.sh"
+
+scenes=()
+command -v tty-clock >/dev/null && scenes+=("tty-clock -c -C 6 -D -B")          # cyan, centered, no date, blink
+command -v cbonsai   >/dev/null && scenes+=("cbonsai -l -i -w 4 -L 48")          # live, regrows forever
+[[ -x $PIPES ]]                  && scenes+=("$PIPES -p 3 -c 4 -c 6 -c 2 -c 5 -R -r 4000")  # frost/aurora pipes
+command -v cava      >/dev/null && scenes+=("cava")
+
+(( ${#scenes[@]} )) || { echo "No eye-candy tools installed" >&2; sleep 60; exit 1; }
+
+while true; do
+    for scene in "${scenes[@]}"; do
+        clear
+        # shellcheck disable=SC2086
+        timeout --foreground "${MINUTES}m" $scene
+        sleep 0.5
+    done
+done

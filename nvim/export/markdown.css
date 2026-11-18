@@ -1,0 +1,18 @@
+/* Nord-flavored light page for markdown exports (prints cleanly to PDF) */
+:root { --fg: #2E3440; --muted: #4C566A; --accent: #5E81AC; --rule: #D8DEE9; --code-bg: #ECEFF4; }
+body { max-width: 46rem; margin: 3rem auto; padding: 0 1.25rem; font: 16px/1.65 Inter, system-ui, sans-serif; color: var(--fg); background: #fff; }
+h1, h2, h3, h4 { line-height: 1.25; margin: 2rem 0 0.75rem; }
+h1 { font-size: 2rem; border-bottom: 2px solid var(--rule); padding-bottom: 0.3rem; }
+h2 { font-size: 1.5rem; border-bottom: 1px solid var(--rule); padding-bottom: 0.25rem; }
+a { color: var(--accent); }
+code, pre { font-family: "Maple Mono NF", "JetBrains Mono", monospace; font-size: 0.9em; }
+code { background: var(--code-bg); padding: 0.1em 0.35em; border-radius: 4px; }
+pre { background: var(--code-bg); padding: 0.9rem 1rem; border-radius: 8px; overflow-x: auto; }
+pre code { background: none; padding: 0; }
+blockquote { margin: 1rem 0; padding: 0.25rem 1rem; border-left: 4px solid var(--accent); color: var(--muted); }
+table { border-collapse: collapse; margin: 1rem 0; }
+th, td { border: 1px solid var(--rule); padding: 0.4rem 0.75rem; text-align: left; }
+th { background: var(--code-bg); }
+img { max-width: 100%; }
+ul.task-list, ul:has(> li > input[type=checkbox]) { list-style: none; padding-left: 1.2rem; }
+@media print { body { margin: 0; max-width: none; } a { color: var(--fg); } }

@@ -1,0 +1,4 @@
+# bat — Nord dark (nord-term points ~/.config/bat/config here)
+--theme="Nord"
+--style="numbers,changes,header"
+--italic-text=always

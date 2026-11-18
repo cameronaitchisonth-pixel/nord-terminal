@@ -1,0 +1,114 @@
+"$schema" = 'https://starship.rs/config-schema.json'
+
+# Nord powerline prompt
+palette = "nord"
+add_newline = true
+
+format = """
+[](nord3)\
+$username\
+[](bg:nord8 fg:nord3)\
+$directory\
+[](fg:nord8 bg:nord10)\
+$git_branch\
+$git_status\
+[](fg:nord10 bg:nord1)\
+$conda\
+$python\
+$nodejs\
+[](fg:nord1)\
+$fill\
+$cmd_duration\
+$line_break\
+$character"""
+
+[palettes.nord]
+accent = "#88C0D0"
+warn = "#EBCB8B"
+nord0 = "#2E3440"
+nord1 = "#3B4252"
+nord2 = "#434C5E"
+nord3 = "#4C566A"
+nord4 = "#D8DEE9"
+nord5 = "#E5E9F0"
+nord6 = "#ECEFF4"
+nord7 = "#8FBCBB"
+nord8 = "#88C0D0"
+nord9 = "#81A1C1"
+nord10 = "#5E81AC"
+nord11 = "#BF616A"
+nord12 = "#D08770"
+nord13 = "#EBCB8B"
+nord14 = "#A3BE8C"
+nord15 = "#B48EAD"
+
+# Used in light mode: nord-term writes a copy with this palette and zsh points
+# STARSHIP_CONFIG at it (see zsh/zshrc), so this file never changes
+[palettes.nord_light]
+accent = "#5E81AC"
+warn = "#B3862C"
+nord0 = "#2E3440"
+nord1 = "#3B4252"
+nord2 = "#434C5E"
+nord3 = "#4C566A"
+nord4 = "#D8DEE9"
+nord5 = "#E5E9F0"
+nord6 = "#ECEFF4"
+nord7 = "#8FBCBB"
+nord8 = "#88C0D0"
+nord9 = "#81A1C1"
+nord10 = "#5E81AC"
+nord11 = "#BF616A"
+nord12 = "#D08770"
+nord13 = "#EBCB8B"
+nord14 = "#A3BE8C"
+nord15 = "#B48EAD"
+
+[username]
+show_always = true
+style_user = "bg:nord3 fg:nord6"
+style_root = "bg:nord3 fg:nord11 bold"
+format = "[ $user ]($style)"
+
+[directory]
+style = "bg:nord8 fg:nord0 bold"
+format = "[ $path ]($style)"
+truncation_length = 3
+truncation_symbol = "…/"
+
+[git_branch]
+symbol = ""
+style = "bg:nord10 fg:nord6"
+format = "[ $symbol $branch ]($style)"
+
+[git_status]
+style = "bg:nord10 fg:nord13"
+format = "[($all_status$ahead_behind )]($style)"
+
+[conda]
+ignore_base = true
+style = "bg:nord1 fg:nord14"
+format = "[ $symbol$environment ]($style)"
+
+[python]
+symbol = " "
+style = "bg:nord1 fg:nord13"
+format = "[ $symbol($version)(\\($virtualenv\\)) ]($style)"
+
+[nodejs]
+symbol = " "
+style = "bg:nord1 fg:nord14"
+format = "[ $symbol($version) ]($style)"
+
+[fill]
+symbol = " "
+
+[cmd_duration]
+min_time = 2000
+style = "fg:warn"
+format = "[ $duration]($style)"
+
+[character]
+success_symbol = "[❯](bold fg:accent)"
+error_symbol = "[❯](bold fg:nord11)"
+vimcmd_symbol = "[❮](bold fg:nord14)"

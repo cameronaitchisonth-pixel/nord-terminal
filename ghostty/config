@@ -1,0 +1,34 @@
+# Nord — follows the system light/dark setting (themes in ./themes)
+theme = light:nord-light,dark:nord-dark
+
+font-family = Maple Mono NF
+font-size = 12
+
+background-opacity = 0.85
+window-padding-x = 10
+window-padding-y = 8
+# No title bar or buttons: tmux is the chrome. Ctrl+Shift+B toggles decorations back if needed.
+window-decoration = none
+keybind = ctrl+shift+b=toggle_window_decorations
+cursor-style = bar
+shell-integration = detect
+copy-on-select = clipboard
+confirm-close-surface = false
+
+# Alt+1..9 go to tmux windows, not Ghostty tabs
+keybind = alt+1=unbind
+keybind = alt+2=unbind
+keybind = alt+3=unbind
+keybind = alt+4=unbind
+keybind = alt+5=unbind
+keybind = alt+6=unbind
+keybind = alt+7=unbind
+keybind = alt+8=unbind
+keybind = alt+9=unbind
+# Ctrl+Shift+Left/Right move tmux windows, not Ghostty tabs
+keybind = ctrl+shift+arrow_left=unbind
+keybind = ctrl+shift+arrow_right=unbind
+
+# Readability: brighten any text below 3:1 contrast, and draw "faint" text at 75% instead of 50%
+minimum-contrast = 3
+faint-opacity = 0.75

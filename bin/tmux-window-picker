@@ -1,0 +1,19 @@
+#!/usr/bin/env bash
+# tmux-window-picker: fuzzy-find any window in any session and jump to it.
+# Bound to prefix + w (runs in a popup). Shows each window's Claude state and a live preview.
+set -u
+HG=$'' BELL=$'' CHECK=$''
+
+target=$(tmux list-windows -a -F "#{session_name}:#{window_index}	#{window_name}	#{@claude_state}	#{?window_active,*,}" |
+    while IFS=$'\t' read -r id name state active; do
+        case $state in working) s="$HG" ;; waiting) s="$BELL" ;; done) s="$CHECK" ;; *) s=" " ;; esac
+        printf '%-6s %s  %s%s\n' "$id" "$s" "$name" "${active:+  (current)}"
+    done |
+    fzf --reverse --no-info --prompt='window ❯ ' --with-nth=1.. \
+        --preview 'tmux capture-pane -ep -t {1} | tail -n "$FZF_PREVIEW_LINES"' \
+        --preview-window='right,60%,border-left' \
+        --color='fg:-1,bg:-1,hl:4,fg+:-1,bg+:-1,hl+:6,pointer:6,prompt:4,border:8' |
+    awk '{print $1}')
+
+[[ -n $target ]] && tmux switch-client -t "$target"
+exit 0

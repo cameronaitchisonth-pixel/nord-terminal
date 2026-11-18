@@ -1,0 +1,20 @@
+# lazygit — Nord light (nord-term points config.yml here)
+gui:
+  nerdFontsVersion: "3"
+  border: rounded
+  theme:
+    activeBorderColor: ["#5E81AC", bold]
+    inactiveBorderColor: ["#9AA5B8"]
+    searchingActiveBorderColor: ["#D08770", bold]
+    optionsTextColor: ["#5E81AC"]
+    selectedLineBgColor: ["#D8DEE9"]
+    inactiveViewSelectedLineBgColor: ["#E5E9F0"]
+    cherryPickedCommitFgColor: ["#5E81AC"]
+    cherryPickedCommitBgColor: ["#E5E9F0"]
+    markedBaseCommitFgColor: ["#D08770"]
+    markedBaseCommitBgColor: ["#E5E9F0"]
+    unstagedChangesColor: ["#BF616A"]
+    defaultFgColor: ["#2E3440"]
+git:
+  diffRenderers:
+    - command: delta --paging=never
