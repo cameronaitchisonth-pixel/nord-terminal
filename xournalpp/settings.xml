@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--Nord settings for Xournal++. install.sh writes this only when you have no settings.xml yet; otherwise it sets these properties in your existing one.-->
+<settings>
+  <property name="selectedToolbar" value="Nord_Dark"/>
+  <property name="themeVariant" value="useSystem"/>
+  <property name="colorPalette" value="@HOME@/.config/xournalpp/palette.gpl"/>
+  <property name="pageTemplate" value="xoj/template&#10;copyLastPageSize=false&#10;copyLastPageSettings=true&#10;size=1417.300000x1417.300000&#10;backgroundType=dotted&#10;backgroundColor=#2e3440&#10;"/>
+  <property name="font" font="Source Code Pro" size="12"/>
+</settings>

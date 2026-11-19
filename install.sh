@@ -7,7 +7,7 @@
 #   ./install.sh --dry-run [...]      show what would happen, change nothing
 #   ./install.sh --deps [...]         also clone tpm and the zsh plugins (needs git)
 #
-# Parts: ghostty tmux nvim zsh starship bat btop lazygit yazi delta bin claude opencode
+# Parts: ghostty tmux nvim zsh starship bat btop lazygit yazi delta bin claude opencode xournalpp
 set -euo pipefail
 
 REPO=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
@@ -20,7 +20,7 @@ for arg in "$@"; do
         --dry-run|-n) DRY=1 ;;
         --deps) DEPS=1 ;;
         -h|--help) sed -n '2,10p' "$0" | sed 's/^# \{0,1\}//'; exit 0 ;;
-        all) parts+=(ghostty tmux nvim zsh starship bat btop lazygit yazi delta bin claude opencode) ;;
+        all) parts+=(ghostty tmux nvim zsh starship bat btop lazygit yazi delta bin claude opencode xournalpp) ;;
         -*) echo "unknown option: $arg" >&2; exit 2 ;;
         *) parts+=("$arg") ;;
     esac
@@ -113,6 +113,27 @@ for part in "${parts[@]}"; do
             notes+=("claude: merge extras/claude/settings-hooks.json into ~/.claude/settings.json for the tmux status icons") ;;
         opencode)
             link extras/opencode/tmux-state.js "$CONF/opencode/plugins/tmux-state.js" ;;
+        xournalpp)
+            x="$CONF/xournalpp"
+            link xournalpp/toolbar.ini "$x/toolbar.ini"
+            link xournalpp/palette.gpl "$x/palette.gpl"
+            # Xournal++ rewrites settings.xml on exit, so the Nord properties are merged in rather than linked
+            if [[ -f $x/settings.xml ]]; then
+                echo "  set     Nord properties in ~/.config/xournalpp/settings.xml"
+                if ((!DRY)); then
+                    cp "$x/settings.xml" "$x/settings.xml.pre-nord-terminal.$STAMP"
+                    sed "s|@HOME@|$HOME|" "$REPO/xournalpp/settings.xml" | grep '<property ' |
+                        awk 'NR == FNR { match($0, /name="[^"]*"/); want[substr($0, RSTART, RLENGTH)] = $0; order[++n] = substr($0, RSTART, RLENGTH); next }
+                             /<property / && match($0, /name="[^"]*"/) && (substr($0, RSTART, RLENGTH) in want) {
+                                 k = substr($0, RSTART, RLENGTH); print want[k]; done[k] = 1; next }
+                             /<\/settings>/ { for (i = 1; i <= n; i++) if (!(order[i] in done)) print want[order[i]] }
+                             { print }' - "$x/settings.xml.pre-nord-terminal.$STAMP" > "$x/settings.xml"
+                fi
+            else
+                echo "  write   ~/.config/xournalpp/settings.xml"
+                ((DRY)) || { mkdir -p "$x"; sed "s|@HOME@|$HOME|" "$REPO/xournalpp/settings.xml" > "$x/settings.xml"; }
+            fi
+            notes+=("xournalpp: close Xournal++ before installing (it overwrites settings.xml on exit); pick View > Toolbars > Nord_Dark or Nord_Light") ;;
         *)
             echo "  unknown part: $part (see ./install.sh --help)" >&2; exit 2 ;;
     esac

@@ -16,6 +16,7 @@ together.
 | **Neovim** | NvChad 2.5 with Nord (dark) and OneNord Light, switching live with the system. LSPs for Python, web, shell, JSON/YAML and Markdown, format on save, in-buffer Markdown rendering, live browser preview and HTML export |
 | **zsh + Starship** | Powerline-style Nord prompt that shrinks finished commands to `❯ cmd`, fzf and fzf-tab with Nord colors, autosuggestions, syntax highlighting, zoxide, eza |
 | **CLI tools** | Nord configs for bat, delta (git diffs), lazygit, yazi and btop |
+| **Xournal++ (optional)** | Nord_Dark and Nord_Light toolbars with Nord pen colors, a Nord color palette, and new pages on a dotted Polar Night background |
 | **Extras (optional)** | Status-bar icons for AI coding sessions in tmux (⏳ working, 🔔 waiting for you, ✓ done) for Claude Code and opencode, and Nord themes for Claude Code |
 
 ## Requirements
@@ -48,7 +49,7 @@ cd ~/nord-terminal
 ./install.sh all           # also the Claude Code and opencode extras
 ```
 
-Parts: `ghostty tmux nvim zsh starship bat btop lazygit yazi delta bin claude opencode`.
+Parts: `ghostty tmux nvim zsh starship bat btop lazygit yazi delta bin claude opencode xournalpp`.
 
 Then:
 
@@ -65,6 +66,7 @@ Then:
 | `starship/starship.toml` | `~/.config/starship.toml` |
 | `bat/`, `delta/`, `lazygit/`, `yazi/`, `btop/themes/` | `~/.config/<tool>/` |
 | `bin/` | `~/.local/bin/` |
+| `xournalpp/` | `~/.config/xournalpp/` (`settings.xml` is merged into yours, not linked) |
 
 ## Light and dark
 
@@ -135,3 +137,4 @@ Remove the symlinks the installer made and rename the `*.pre-nord-terminal.*` ba
 [Nord](https://www.nordtheme.com/) by Arctic Ice Studio and Sven Greb, including
 [nord-dircolors](https://github.com/nordtheme/dircolors) (MIT, `zsh/dircolors`). btop Nord theme by Justin Zobel.
 Neovim config built on the [NvChad starter](https://github.com/NvChad/starter).
+Xournal++ toolbars adapted from [xournalpp-nord](https://github.com/juansegaes/xournalpp-nord) (GPL-3.0).
