@@ -1,9 +1,30 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!--Nord settings for Xournal++. install.sh writes this only when you have no settings.xml yet; otherwise it sets these properties in your existing one.-->
+<!--Nord settings for Xournal++. install.sh writes this when you have no settings.xml yet; otherwise apply-settings.py merges these entries into yours. xournalpp-nord switches the page color and black/white ink with the light/dark mode each time Xournal++ starts.-->
 <settings>
   <property name="selectedToolbar" value="Nord_Dark"/>
   <property name="themeVariant" value="useSystem"/>
   <property name="colorPalette" value="@HOME@/.config/xournalpp/palette.gpl"/>
   <property name="pageTemplate" value="xoj/template&#10;copyLastPageSize=false&#10;copyLastPageSettings=true&#10;size=1417.300000x1417.300000&#10;backgroundType=dotted&#10;backgroundColor=#2e3440&#10;"/>
   <property name="font" font="Source Code Pro" size="12"/>
+  <!--A bigger pointer: the default dot is drawn in the pen color and disappears on a page of the same shade-->
+  <property name="stylusCursorType" value="big"/>
+  <property name="recolor.enabled" value="false"/>
+  <property name="recolor.sidebar" value="false"/>
+  <!--Pen side buttons: hold the lower one to erase, the upper one to pan-->
+  <data name="buttonConfig">
+    <data name="stylus">
+      <attribute name="eraserMode" type="string" value="none"/>
+      <attribute name="size" type="string" value="none"/>
+      <attribute name="tool" type="string" value="eraser"/>
+    </data>
+    <data name="stylus2">
+      <attribute name="tool" type="string" value="hand"/>
+    </data>
+  </data>
+  <!--First swatches in the page color picker (Ctrl+Alt+Shift+B): Snow Storm, Polar Night-->
+  <data name="lastUsedPageBgColor">
+    <attribute name="count" type="int" value="2"/>
+    <attribute name="color00" type="int" value="15527924"/>
+    <attribute name="color01" type="int" value="3028032"/>
+  </data>
 </settings>

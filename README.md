@@ -19,7 +19,7 @@ extensions, wallpapers, Firefox and more. Each half installs on its own.
 | **Neovim** | NvChad 2.5 with Nord (dark) and OneNord Light, switching live with the system. LSPs for Python, web, shell, JSON/YAML and Markdown, format on save, in-buffer Markdown rendering, live browser preview and HTML export |
 | **zsh + Starship** | Powerline-style Nord prompt that shrinks finished commands to `❯ cmd`, fzf and fzf-tab with Nord colors, autosuggestions, syntax highlighting, zoxide, eza |
 | **CLI tools** | Nord configs for bat, delta (git diffs), lazygit, yazi and btop |
-| **Xournal++ (optional)** | Nord_Dark and Nord_Light toolbars with Nord pen colors, a Nord color palette, and new pages on a dotted Polar Night background |
+| **Xournal++ (optional)** | Nord_Dark and Nord_Light toolbars and pen colors; pages and black/white ink that follow light/dark; a drawing tablet's buttons for colors, undo, zoom and the line tool (see [Xournal++ and a drawing tablet](#xournal-and-a-drawing-tablet)) |
 | **Extras (optional)** | Status-bar icons for AI coding sessions in tmux (⏳ working, 🔔 waiting for you, ✓ done) for Claude Code and opencode, and Nord themes for Claude Code |
 
 ## Requirements
@@ -69,7 +69,7 @@ Then:
 | `starship/starship.toml` | `~/.config/starship.toml` |
 | `bat/`, `delta/`, `lazygit/`, `yazi/`, `btop/themes/` | `~/.config/<tool>/` |
 | `bin/` | `~/.local/bin/` |
-| `xournalpp/` | `~/.config/xournalpp/` (`settings.xml` is merged into yours, not linked) |
+| `xournalpp/` | `~/.config/xournalpp/` (`settings.xml` is merged into yours, not linked); `xournalpp-nord` to `~/.local/bin/` |
 
 ## Light and dark
 
@@ -171,6 +171,30 @@ Edit your start page shortcuts in `desktop/firefox/startpage/index.html`. To sho
 [New Tab Override](https://addons.mozilla.org/firefox/addon/new-tab-override/) add-on with Custom URL
 `http://127.0.0.1:8473/` and "Set focus to the web page" ticked. The installer runs a small local-only web server
 for it, because Firefox add-ons can't open local files.
+
+## Xournal++ and a drawing tablet
+
+`./install.sh xournalpp` sets up [Xournal++](https://xournalpp.github.io) (quit it first):
+
+- **Light/dark pages.** The Xournal++ app icon starts it through `xournalpp-nord`, which picks the
+  colors from your light/dark mode: dark mode gives Polar Night pages and white ink, light mode Snow Storm
+  pages and black ink. The other pen colors stay the same. Xournal++ only reads this when it starts, and
+  pages you already made keep their color; switch one with the page-color button
+  (<kbd>Ctrl</kbd>+<kbd>Alt</kbd>+<kbd>Shift</kbd>+<kbd>B</kbd>, Nord light and dark are its first swatches).
+- **Pen buttons.** Hold the lower one to erase, the upper one to pan. The pointer is drawn larger so it
+  stays visible on the dark page.
+- **Tablet express keys.** The NordTablet plugin (`xournalpp/plugins/NordTablet/main.lua`) gives the
+  first 8 buttons these actions:
+
+  | Button | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 |
+  |---|---|---|---|---|---|---|---|---|
+  | Action | Color 1 (black on light pages, white on dark) | Color 2 | Color 3 | Next color | Undo | Zoom in | Zoom out | Line tool (again: freehand) |
+
+  Linux's own drivers don't pass many tablets' buttons through (a Huion H950P's send nothing), so this
+  uses [OpenTabletDriver](https://opentabletdriver.net). Install it, start it with
+  `systemctl --user enable --now opentabletdriver.service`, replug the tablet, then run
+  `xournalpp/tablet-buttons`. That makes the buttons send <kbd>Ctrl</kbd>+<kbd>Alt</kbd>+<kbd>Shift</kbd>
+  + U, I, O, J, K, L, M, N, which the plugin turns into the actions above.
 
 ## Uninstall
 

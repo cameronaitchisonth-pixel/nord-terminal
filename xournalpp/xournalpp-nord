@@ -1,0 +1,50 @@
+#!/usr/bin/env bash
+# xournalpp-nord: start Xournal++ with pages and ink that follow the Nord light/dark mode.
+#
+#   dark mode   new pages are Polar Night, default ink is Snow Storm (white)
+#   light mode  new pages are Snow Storm, default ink is Polar Night (black)
+#
+# The pen colors stay the same Nord palette in both modes; only black and white swap. Pages
+# you already made keep their color (switch one with the page-color button, Ctrl+Alt+Shift+B).
+# Xournal++ reads its settings only when it starts, so an open window follows a mode switch the
+# next time it's opened. install.sh points the Xournal++ app entry here.
+set -u
+
+X="${XDG_CONFIG_HOME:-$HOME/.config}/xournalpp/settings.xml"
+
+mode=$("$HOME/.local/bin/nord-mode" status 2>/dev/null) || mode=$("$HOME/.local/bin/nord-term" status 2>/dev/null) ||
+    mode=$([[ $(/usr/bin/gsettings get org.gnome.desktop.interface color-scheme) == "'prefer-dark'" ]] && echo dark || echo light)
+
+if [[ -f $X ]]; then
+    /usr/bin/python3 -I - "$X" "$mode" <<'PY'
+import re, sys
+path, mode = sys.argv[1], sys.argv[2]
+s = open(path, encoding="utf-8").read()
+dark = mode == "dark"
+
+# Real page colors, not Xournal++'s recolor view (which inverts hues: blue turns brown)
+for name in ("recolor.enabled", "recolor.sidebar"):
+    s = re.sub(rf'(<property name="{re.escape(name)}" value=")[^"]*"', r'\1false"', s, count=1)
+
+# New pages: Polar Night in dark mode, Snow Storm in light mode
+bg = "#2e3440" if dark else "#eceff4"
+s = re.sub(r'(<property name="pageTemplate" value="[^"]*?backgroundColor=)#[0-9a-fA-F]{6}', rf"\g<1>{bg}", s, count=1)
+
+# Default pen ink: white on dark, black on light, but only if it's black or white now
+ink, swap = ("ffeceff4", {"ff2e3440", "ff000000"}) if dark else ("ff2e3440", {"ffeceff4", "ffffffff"})
+m = re.search(r'<data name="tools">.*?<data name="pen">.*?<attribute name="color" type="hex" value="([0-9a-f]{8})"', s, re.S)
+if m and m.group(1) in swap:
+    s = s[:m.start(1)] + ink + s[m.end(1):]
+
+open(path, "w", encoding="utf-8").write(s)
+PY
+fi
+
+# This new window gets the current colors; Xournal++ windows that were already open keep the
+# colors they started with, so mention it.
+if pgrep -x xournalpp >/dev/null; then
+    notify-send --app-name=Xournal++ --icon=com.github.xournalpp.xournalpp \
+        "Other Xournal++ windows are still open" "They keep their old page colors until you quit them (Ctrl+Q) and reopen." 2>/dev/null || true
+fi
+
+exec "$(command -v xournalpp-wrapper || command -v xournalpp)" "$@"

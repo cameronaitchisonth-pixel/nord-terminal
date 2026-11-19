@@ -4,3 +4,4 @@ desktop/signal/node_modules/
 desktop/signal/build/
 *.pre-nord-desktop.*
 gschemas.compiled
+__pycache__/

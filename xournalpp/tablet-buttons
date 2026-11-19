@@ -1,0 +1,32 @@
+#!/usr/bin/env bash
+# tablet-buttons: bind a drawing tablet's express keys, through OpenTabletDriver, to the
+# shortcuts the Xournal++ NordTablet plugin listens for.
+#
+#   button  1        2        3        4           5     6        7         8
+#   sends   Ctrl+Alt+Shift+ U I O J K L M N
+#   does    color 1  color 2  color 3  next color  undo  zoom in  zoom out  line tool
+#
+# Change what each one does in plugins/NordTablet/main.lua. Needs OpenTabletDriver
+# (https://opentabletdriver.net) running; Linux's own drivers don't expose many tablets' buttons.
+set -euo pipefail
+
+S="$HOME/.config/OpenTabletDriver/settings.json"
+command -v otd >/dev/null || { echo "Install OpenTabletDriver first: https://opentabletdriver.net" >&2; exit 1; }
+[[ -f $S ]] || { echo "Start OpenTabletDriver once so it writes $S:  systemctl --user enable --now opentabletdriver.service" >&2; exit 1; }
+
+cp "$S" "$S.pre-nord-terminal.$(date +%Y%m%d-%H%M%S)"
+python3 -I - "$S" <<'PY'
+import json, sys
+path = sys.argv[1]
+settings = json.load(open(path))
+keys = "UIOJKLMN"
+for profile in settings.get("Profiles", []):
+    aux = profile["Bindings"].get("AuxButtons") or []
+    for i in range(min(len(aux), len(keys))):
+        aux[i] = {"Path": "OpenTabletDriver.Desktop.Binding.MultiKeyBinding",
+                  "Settings": [{"Property": "Keys", "Value": f"Control+Alt+Shift+{keys[i]}"}], "Enable": True}
+    profile["Bindings"]["AuxButtons"] = aux
+    print(f"  {profile['Tablet']}: {min(len(aux), len(keys))} buttons bound")
+json.dump(settings, open(path, "w"), indent=2)
+PY
+otd load "$S" >/dev/null && echo "OpenTabletDriver reloaded. Restart Xournal++ if it was open."

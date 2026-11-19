@@ -117,23 +117,28 @@ for part in "${parts[@]}"; do
             x="$CONF/xournalpp"
             link xournalpp/toolbar.ini "$x/toolbar.ini"
             link xournalpp/palette.gpl "$x/palette.gpl"
-            # Xournal++ rewrites settings.xml on exit, so the Nord properties are merged in rather than linked
-            if [[ -f $x/settings.xml ]]; then
-                echo "  set     Nord properties in ~/.config/xournalpp/settings.xml"
-                if ((!DRY)); then
-                    cp "$x/settings.xml" "$x/settings.xml.pre-nord-terminal.$STAMP"
-                    sed "s|@HOME@|$HOME|" "$REPO/xournalpp/settings.xml" | grep '<property ' |
-                        awk 'NR == FNR { match($0, /name="[^"]*"/); want[substr($0, RSTART, RLENGTH)] = $0; order[++n] = substr($0, RSTART, RLENGTH); next }
-                             /<property / && match($0, /name="[^"]*"/) && (substr($0, RSTART, RLENGTH) in want) {
-                                 k = substr($0, RSTART, RLENGTH); print want[k]; done[k] = 1; next }
-                             /<\/settings>/ { for (i = 1; i <= n; i++) if (!(order[i] in done)) print want[order[i]] }
-                             { print }' - "$x/settings.xml.pre-nord-terminal.$STAMP" > "$x/settings.xml"
-                fi
-            else
-                echo "  write   ~/.config/xournalpp/settings.xml"
-                ((DRY)) || { mkdir -p "$x"; sed "s|@HOME@|$HOME|" "$REPO/xournalpp/settings.xml" > "$x/settings.xml"; }
+            link xournalpp/plugins/NordTablet "$x/plugins/NordTablet"
+            link xournalpp/xournalpp-nord "$HOME/.local/bin/xournalpp-nord"
+            # Xournal++ rewrites settings.xml on exit, so the Nord settings are merged in rather than linked
+            echo "  merge   Nord settings into ~/.config/xournalpp/settings.xml"
+            if ((!DRY)); then
+                [[ -f $x/settings.xml ]] && cp "$x/settings.xml" "$x/settings.xml.pre-nord-terminal.$STAMP"
+                python3 -I "$REPO/xournalpp/apply-settings.py" "$REPO/xournalpp/settings.xml" "$x/settings.xml"
             fi
-            notes+=("xournalpp: close Xournal++ before installing (it overwrites settings.xml on exit); pick View > Toolbars > Nord_Dark or Nord_Light") ;;
+            # Start Xournal++ through xournalpp-nord, so pages and black/white ink follow light/dark
+            app=/usr/share/applications/com.github.xournalpp.xournalpp.desktop
+            if [[ -f $app ]]; then
+                echo "  launch  Xournal++ app entry -> xournalpp-nord"
+                ((DRY)) || { mkdir -p "$HOME/.local/share/applications"
+                    sed "s|^Exec=xournalpp[^ ]*|Exec=$HOME/.local/bin/xournalpp-nord|" "$app" \
+                        > "$HOME/.local/share/applications/com.github.xournalpp.xournalpp.desktop"; }
+            fi
+            notes+=("xournalpp: quit Xournal++ before installing (it overwrites settings.xml on exit)")
+            if command -v otd >/dev/null; then
+                notes+=("xournalpp: bind your tablet's express keys with  xournalpp/tablet-buttons")
+            else
+                notes+=("xournalpp: for tablet express keys, install OpenTabletDriver (https://opentabletdriver.net), then run xournalpp/tablet-buttons")
+            fi ;;
         *)
             echo "  unknown part: $part (see ./install.sh --help)" >&2; exit 2 ;;
     esac
