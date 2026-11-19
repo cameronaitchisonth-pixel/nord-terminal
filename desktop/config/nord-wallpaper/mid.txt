@@ -1,0 +1,21 @@
+# medium-brightness wallpapers, used in both light and dark mode; names are in ~/Pictures/Wallpapers; delete lines you don't like
+ign-0011.png
+ign_evening.png
+ign_graySpaceship.png
+ign_unsplash17.png
+ign_unsplash18.png
+ign_unsplash20.png
+ign_unsplash23.png
+ign_unsplash28.png
+ign_unsplash29.png
+ign_unsplash32.png
+ign_unsplash36.png
+ign_unsplash37.png
+ign_unsplash45.png
+ign_unsplash46.png
+mountain_jaws.jpg
+murky_peaks.jpg
+nord_lake.png
+nord_mountains.png
+nord_valley.png
+street_blues.png

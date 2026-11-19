@@ -1,0 +1,87 @@
+#!/usr/bin/python3 -I
+"""Make chosen apps' windows see-through (GNOME on X11 honors _NET_WM_WINDOW_OPACITY).
+
+Ghostty can make only its background translucent, so its text stays solid. Apps like Signal
+(Electron) can't do that, so this fades the whole window, text included. Blur my Shell's
+application blur (whitelist) blurs whatever is behind those windows, which keeps text readable.
+
+Rules live in ~/.config/window-opacity.conf, one per line: <WM_CLASS> <opacity 0.1-1.0>
+  window-opacity          apply the rules to every open window now
+  window-opacity watch    keep applying them as windows open (run by window-opacity.service)
+Find an app's class with:  xprop WM_CLASS   (then click its window; use the second name)
+"""
+import os
+import re
+import subprocess
+import sys
+
+CONF = os.path.expanduser("~/.config/window-opacity.conf")
+DEFAULT_CONF = "# <WM_CLASS> <opacity 0.1-1.0>   (1.0 = solid)\nsignal 0.90\n"
+ATOM = "_NET_WM_WINDOW_OPACITY"
+
+classes = {}  # window id -> lowercased WM_CLASS class name (cached; it doesn't change)
+
+
+def rules():
+    if not os.path.exists(CONF):
+        with open(CONF, "w") as f:
+            f.write(DEFAULT_CONF)
+    out = {}
+    with open(CONF) as f:
+        for line in f:
+            parts = line.split("#", 1)[0].split()
+            if len(parts) == 2:
+                try:
+                    out[parts[0].lower()] = min(1.0, max(0.1, float(parts[1])))
+                except ValueError:
+                    pass
+    return out
+
+
+def xprop(*args):
+    return subprocess.run(["xprop", *args], capture_output=True, text=True).stdout
+
+
+def wm_class(wid):
+    if wid not in classes:
+        names = re.findall(r'"([^"]*)"', xprop("-id", wid, "WM_CLASS"))
+        classes[wid] = names[-1].lower() if names else ""
+    return classes[wid]
+
+
+def apply(wids):
+    want = rules()
+    for wid in wids:
+        if wm_class(wid) not in want:
+            continue
+        value = round(want[wm_class(wid)] * 0xFFFFFFFF)
+        current = re.search(r"= (\d+)", xprop("-id", wid, ATOM))
+        if value >= 0xFFFFFFFF:
+            if current:
+                xprop("-id", wid, "-remove", ATOM)
+        elif not current or int(current.group(1)) != value:
+            xprop("-id", wid, "-f", ATOM, "32c", "-set", ATOM, str(value))
+
+
+def client_ids(line):
+    return re.findall(r"0x[0-9a-f]+", line.split("=", 1)[-1])
+
+
+def main():
+    if sys.argv[1:] == ["watch"]:
+        spy = subprocess.Popen(["xprop", "-root", "-spy", "_NET_CLIENT_LIST"],
+                               stdout=subprocess.PIPE, text=True)
+        for line in spy.stdout:
+            wids = client_ids(line)
+            for gone in set(classes) - set(wids):
+                del classes[gone]
+            apply(wids)
+        sys.exit(spy.wait() or 1)  # X went away; systemd restarts us
+    elif not sys.argv[1:]:
+        apply(client_ids(xprop("-root", "_NET_CLIENT_LIST")))
+    else:
+        sys.exit(__doc__)
+
+
+if __name__ == "__main__":
+    main()

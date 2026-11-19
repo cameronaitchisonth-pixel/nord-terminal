@@ -1,0 +1,85 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>New Tab</title>
+<style>
+  :root {
+    --bg: #ECEFF4; --panel: #E5E9F0; --panel-hover: #D8DEE9; --fg: #2E3440; --muted: #4C566A;
+    --accent: #5E81AC; --border: #D8DEE9;
+    color-scheme: light dark;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root { --bg: #2E3440; --panel: #3B4252; --panel-hover: #434C5E; --fg: #ECEFF4; --muted: #9AA5B8;
+             --accent: #88C0D0; --border: #434C5E; }
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; min-height: 100vh; background: var(--bg); color: var(--fg);
+         font-family: Inter, system-ui, sans-serif; display: grid; place-items: center; }
+  main { width: min(900px, 100% - 32px); padding: 48px 0; }
+  .clock { font-size: clamp(56px, 9vw, 96px); font-weight: 300; letter-spacing: -2px; text-align: center; margin: 0; }
+  .date { text-align: center; color: var(--muted); margin: 4px 0 32px; font-size: 18px; }
+  form { display: flex; margin: 0 auto 40px; max-width: 620px; }
+  input { flex: 1; font: inherit; font-size: 17px; padding: 14px 20px; border-radius: 999px;
+          border: 2px solid var(--border); background: var(--panel); color: var(--fg); outline: none; }
+  input:focus { border-color: var(--accent); }
+  input::placeholder { color: var(--muted); }
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); gap: 14px; }
+  .tile { display: grid; grid-template-columns: 40px 1fr; grid-template-rows: auto auto; column-gap: 12px;
+          align-items: center; padding: 14px; border-radius: 14px; background: var(--panel);
+          color: inherit; text-decoration: none; border: 1px solid var(--border); transition: background .15s; }
+  .tile:hover, .tile:focus-visible { background: var(--panel-hover); outline: none; }
+  .badge { grid-row: 1 / 3; width: 40px; height: 40px; border-radius: 10px; display: grid; place-items: center;
+           font-weight: 700; font-size: 18px; color: #2E3440; background: var(--c); }
+  .label { font-weight: 600; font-size: 15px; }
+  .host { color: var(--muted); font-size: 12px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+</style>
+</head>
+<body>
+<main>
+  <h1 class="clock" id="clock">--:--</h1>
+  <p class="date" id="date"></p>
+  <form action="https://www.google.com/search" method="get" role="search">
+    <input name="q" placeholder="Search the web" aria-label="Search the web" autocomplete="off" autofocus>
+  </form>
+  <!-- Your shortcuts: copy a line, change the link, color, letter and label -->
+  <nav class="grid" aria-label="Shortcuts">
+      <a class="tile" href="https://github.com/"><span class="badge" style="--c:#5E81AC">G</span><span class="label">GitHub</span><span class="host">github.com</span></a>
+      <a class="tile" href="https://mail.google.com/"><span class="badge" style="--c:#BF616A">M</span><span class="label">Mail</span><span class="host">mail.google.com</span></a>
+      <a class="tile" href="https://calendar.google.com/"><span class="badge" style="--c:#B48EAD">C</span><span class="label">Calendar</span><span class="host">calendar.google.com</span></a>
+      <a class="tile" href="https://www.youtube.com/"><span class="badge" style="--c:#D08770">Y</span><span class="label">YouTube</span><span class="host">www.youtube.com</span></a>
+      <a class="tile" href="https://news.ycombinator.com/"><span class="badge" style="--c:#EBCB8B">H</span><span class="label">Hacker News</span><span class="host">news.ycombinator.com</span></a>
+      <a class="tile" href="https://www.reddit.com/"><span class="badge" style="--c:#A3BE8C">R</span><span class="label">Reddit</span><span class="host">www.reddit.com</span></a>
+      <a class="tile" href="https://www.nordtheme.com/"><span class="badge" style="--c:#88C0D0">N</span><span class="label">Nord</span><span class="host">www.nordtheme.com</span></a>
+      <a class="tile" href="https://en.wikipedia.org/"><span class="badge" style="--c:#8FBCBB">W</span><span class="label">Wikipedia</span><span class="host">en.wikipedia.org</span></a>
+  </nav>
+</main>
+<script>
+  function tick() {
+    const now = new Date();
+    document.getElementById('clock').textContent = now.toLocaleTimeString([], {hour: '2-digit', minute: '2-digit'});
+    document.getElementById('date').textContent = now.toLocaleDateString([], {weekday: 'long', month: 'long', day: 'numeric'});
+  }
+  tick(); setInterval(tick, 1000);
+
+  // New tabs land here with the cursor already in the search box (New Tab Override:
+  // "Set focus to the web page"). Like the address bar: web addresses open directly
+  // (localhost and IPs over http), anything else is a Google search.
+  const form = document.querySelector('form[role=search]');
+  const q = form.querySelector('input');
+  q.focus();
+  form.addEventListener('submit', e => {
+    const v = q.value.trim();
+    if (!v) { e.preventDefault(); return; }
+    const scheme = /^[a-z][a-z0-9+.-]*:\/\//i.test(v);
+    const local = /^(localhost|\d{1,3}(\.\d{1,3}){3})(:\d+)?(\/\S*)?$/i.test(v);
+    const domain = /^[\w-]+(\.[\w-]+)*\.[a-z]{2,}(:\d+)?(\/\S*)?$/i.test(v);
+    if (scheme || local || domain) {
+      e.preventDefault();
+      location.href = scheme ? v : (local ? 'http://' : 'https://') + v;
+    }
+  });
+</script>
+</body>
+</html>

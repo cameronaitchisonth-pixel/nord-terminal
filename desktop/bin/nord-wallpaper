@@ -1,0 +1,48 @@
+#!/usr/bin/env bash
+# nord-wallpaper — pick a new light/dark wallpaper pair from the Nord pools.
+#
+#   nord-wallpaper [next]   next pair from the shuffled decks (hourly via nord-wallpaper.timer; Super+Shift+W)
+#   nord-wallpaper current  show the current pair
+#
+# Pools: ~/.config/nord-wallpaper/{light,dark,mid}.txt (mid is used in both modes); one file per line,
+# either a full path or a name inside ~/Pictures/Wallpapers ($NORD_WALLPAPERS). Edit freely.
+# GNOME shows the light one in light mode and the dark one in dark mode.
+set -u
+POOLS="$HOME/.config/nord-wallpaper"
+WALLS="${NORD_WALLPAPERS:-$HOME/Pictures/Wallpapers}"
+G=/usr/bin/gsettings   # not conda's copy, which can't see GNOME's settings
+BG=org.gnome.desktop.background
+
+STATE="${XDG_STATE_HOME:-$HOME/.local/state}/nord-wallpaper"
+
+# Deal from a shuffled deck per mode: every image shows once before any repeats.
+# Light mode draws from light.txt + mid.txt, dark mode from dark.txt + mid.txt.
+pick() { # mode current-uri -> next path
+    local mode=$1 current=$2 deck="$STATE/$1.deck" pool next
+    mkdir -p "$STATE"
+    pool=$(cat "$POOLS/$mode.txt" "$POOLS/mid.txt" 2>/dev/null | grep -v -e '^#' -e '^[[:space:]]*$' |
+        while read -r p; do [[ $p == /* ]] || p="$WALLS/$p"; [[ -f $p ]] && echo "$p"; done | sort -u)
+    [[ -n $pool ]] || return
+    # Drop deck entries that were removed from the pools since the deck was dealt
+    [[ -f $deck ]] && grep -Fxf <(echo "$pool") "$deck" > "$deck.tmp"; mv -f "$deck.tmp" "$deck" 2>/dev/null
+    if [[ ! -s $deck ]]; then   # new shuffle, without starting on the image already showing
+        echo "$pool" | grep -vFx "${current#file://}" | shuf > "$deck"
+        [[ -s $deck ]] || echo "$pool" > "$deck"
+    fi
+    next=$(head -n1 "$deck"); sed -i '1d' "$deck"
+    echo "$next"
+}
+
+case ${1:-next} in
+    next)
+        light=$(pick light "$($G get $BG picture-uri | tr -d "'")")
+        dark=$(pick dark "$($G get $BG picture-uri-dark | tr -d "'")")
+        [[ -n $light ]] && $G set $BG picture-uri "file://$light"
+        [[ -n $dark ]] && { $G set $BG picture-uri-dark "file://$dark"; $G set org.gnome.desktop.screensaver picture-uri "file://$dark"; }
+        $G set $BG picture-options zoom
+        echo "light: ${light##*/}  dark: ${dark##*/}"
+        ;;
+    current)
+        echo "light: $($G get $BG picture-uri)"; echo "dark:  $($G get $BG picture-uri-dark)" ;;
+    *)  echo "usage: nord-wallpaper [next|current]" >&2; exit 2 ;;
+esac

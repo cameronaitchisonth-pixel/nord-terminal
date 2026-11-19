@@ -1,0 +1,7 @@
+{
+  "uuid": "nord-focus@nord-terminal",
+  "name": "Nord Focus",
+  "description": "Cover every monitor except the one you are working on, dimmed or with a Nord clock splash. Super+Shift+F toggles.",
+  "shell-version": ["46"],
+  "settings-schema": "org.gnome.shell.extensions.nord-focus"
+}

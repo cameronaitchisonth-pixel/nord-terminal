@@ -1,0 +1,34 @@
+#!/usr/bin/env bash
+# signal-nord-reapply: keep Signal Desktop's Nord colors applied after Signal updates.
+# Installed root-owned in /usr/local/sbin and run by apt (/etc/apt/apt.conf.d/99signal-nord).
+# The bundle is built unprivileged, as the owning user. Root only copies the finished
+# file into /opt/Signal after checking it; nothing from the user's home runs as root.
+set -uo pipefail
+
+OWNER=@OWNER@          # filled in by install.sh
+HERE=@SIGNAL_DIR@
+RES=/opt/Signal/resources
+BUILD=$HERE/build
+
+[[ $EUID -eq 0 ]] || { echo "run as root" >&2; exit 1; }
+FORCE=0; [[ ${1:-} == --force ]] && FORCE=1                        # --force: rebuild and re-apply
+
+[[ -f $RES/app.asar ]] || exit 0                                   # Signal not installed
+PATCHED=0; grep -q "nord-signal-patched" "$RES/app.asar" && PATCHED=1
+(( PATCHED && !FORCE )) && exit 0                                  # already Nord
+
+# Build unprivileged; a failure leaves stock Signal in place
+runuser -u "$OWNER" -- bash "$HERE/build.sh" >/dev/null 2>&1 || {
+    echo "signal-nord: build failed; Signal keeps its stock colors" >&2; exit 0; }
+
+# Sanity checks: built for this Signal version, contains the patch, not a tiny/broken file
+want=$(dpkg-query -W -f='${Version}' signal-desktop 2>/dev/null)
+[[ $(cat "$BUILD/signal-version" 2>/dev/null) == "$want" ]] || { echo "signal-nord: version mismatch" >&2; exit 0; }
+grep -q "nord-signal-patched" "$BUILD/app.asar" || { echo "signal-nord: build not patched" >&2; exit 0; }
+[[ $(stat -c %s "$BUILD/app.asar") -gt $(( $(stat -c %s "$RES/app.asar") * 9 / 10 )) ]] || {
+    echo "signal-nord: build looks truncated" >&2; exit 0; }
+
+(( PATCHED )) || cp -a "$RES/app.asar" "$RES/app.asar.orig"   # stock copy (never overwrite it with a patched one)
+install -o root -g root -m 644 "$BUILD/app.asar" "$RES/app.asar.new"
+mv -f "$RES/app.asar.new" "$RES/app.asar"
+echo "signal-nord: Nord colors applied to Signal $want (restart Signal to see them)"

@@ -1,0 +1,13 @@
+<?xml version="1.0"?>
+<!DOCTYPE wallpapers SYSTEM "gnome-wp-list.dtd">
+<wallpapers>
+  <wallpaper deleted="false">
+    <name>Nord Abstract</name>
+    <filename>@WALLS@/Abstract-Nord-light.png</filename>
+    <filename-dark>@WALLS@/Abstract-Nord.png</filename-dark>
+    <options>zoom</options>
+    <shade_type>solid</shade_type>
+    <pcolor>#ECEFF4</pcolor>
+    <scolor>#2E3440</scolor>
+  </wallpaper>
+</wallpapers>

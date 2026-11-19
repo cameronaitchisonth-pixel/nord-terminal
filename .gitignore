@@ -1,2 +1,6 @@
 *.pre-nord-terminal.*
 .DS_Store
+desktop/signal/node_modules/
+desktop/signal/build/
+*.pre-nord-desktop.*
+gschemas.compiled

@@ -1,0 +1,6 @@
+[Unit]
+Description=Rotate the Nord light/dark wallpaper pair
+
+[Service]
+Type=oneshot
+ExecStart=%h/.local/bin/nord-wallpaper next

@@ -4,6 +4,9 @@ A [Nord](https://www.nordtheme.com/) terminal setup: Ghostty, tmux, Neovim (NvCh
 plus matching themes for bat, delta, lazygit, yazi and btop. Everything switches between Nord light and Nord dark
 together.
 
+The [`desktop/`](#desktop-gnome) half themes the GNOME desktop around it the same way: GTK and shell theme, icons,
+extensions, wallpapers, Firefox and more. Each half installs on its own.
+
 <!-- Add a screenshot: save it as docs/screenshot.png and uncomment the next line -->
 <!-- ![nord-terminal](docs/screenshot.png) -->
 
@@ -128,13 +131,57 @@ The tmux status bar can show what an AI coding session in each window is doing: 
   `~/.claude/settings.json`. The same hooks also let tmux-resurrect resume each pane's own conversation after a restore.
 - **opencode**: `./install.sh opencode bin` (a plugin in `~/.config/opencode/plugins/`).
 
+## Desktop (GNOME)
+
+Made for Ubuntu 24.04 with GNOME 46. Everything follows one light/dark switch: the Quick Settings "Dark Style"
+button, or <kbd>Super</kbd>+<kbd>Shift</kbd>+<kbd>D</kbd>.
+
+| Part | What you get |
+|---|---|
+| **Theme** | [Colloid](https://github.com/vinceliuice/Colloid-gtk-theme) Light/Dark Nord for GTK 3, GTK 4/libadwaita and the shell; Colloid Nord icons and cursors; Maple Mono NF as the system font |
+| **nord-mode** | Switches the theme, icons, cursor, dock, launcher colors, GNOME Terminal and (through `nord-term`) the whole terminal side. Runs as a user service that follows GNOME's setting |
+| **Extensions** | Blur my Shell (blurred top bar; the dock is plainly see-through), Just Perfection (quieter overview), Search Light (<kbd>Super</kbd>+<kbd>Space</kbd>), Space Bar, Vitals, Clipboard Indicator (<kbd>Super</kbd>+<kbd>Shift</kbd>+<kbd>V</kbd>), User Themes |
+| **Nord Focus** | This repo's own extension: <kbd>Super</kbd>+<kbd>Shift</kbd>+<kbd>F</kbd> covers every monitor except the one you're on with a clock splash (or dims them) and mutes notifications. `nord-focus dim`, `splash`, `status` |
+| **Wallpapers** | ~100 Nord wallpapers from [nordic-wallpapers](https://github.com/linuxdotexe/nordic-wallpapers), rotating hourly as light/dark pairs with no repeats (<kbd>Super</kbd>+<kbd>Shift</kbd>+<kbd>W</kbd> for the next pair). Edit `~/.config/nord-wallpaper/*.txt` to choose |
+| **See-through apps** | `window-opacity` makes chosen apps translucent (Signal and the Claude app by default; rules in `~/.config/window-opacity.conf`) |
+| **Firefox** | Nord browser chrome that follows light/dark, vertical tabs, Maple Mono for web pages, and a Nord start page with a clock, search box and shortcut tiles |
+| **Icons** | Nord icons for apps whose launchers hard-code their own icon (snap Firefox and Ghostty, the Claude app) |
+| **VS Code** | `desktop/vscode/settings.json`: Nord / Nord Light following the system, Maple Mono |
+| **Signal** (sudo, optional) | Recolors Signal Desktop to Nord and re-applies it after every Signal update |
+| **System** (sudo, optional) | zsh as login shell, a Nord boot splash (Plymouth) and a Nord login screen |
+
+```sh
+desktop/install.sh --dry-run      # see what would change
+desktop/install.sh                # everything; or pick parts, e.g. desktop/install.sh themes settings
+```
+
+Parts: `themes extensions settings scripts wallpapers firefox fonts icons`. (Xournal++ is a part of the
+terminal installer: `./install.sh xournalpp`.) The theme parts are cloned
+from GitHub and installed with their own installers. Extensions come from extensions.gnome.org, and GNOME asks you
+to confirm each one. Log out and back in afterwards so GNOME loads them.
+
+The sudo extras are separate:
+
+```sh
+sudo bash desktop/system/install-system.sh           # login shell, boot splash, login screen
+(cd desktop/signal && npm install) && sudo bash desktop/signal/install.sh   # Signal colors
+```
+
+Edit your start page shortcuts in `desktop/firefox/startpage/index.html`. To show it on new tabs, install the
+[New Tab Override](https://addons.mozilla.org/firefox/addon/new-tab-override/) add-on with Custom URL
+`http://127.0.0.1:8473/` and "Set focus to the web page" ticked. The installer runs a small local-only web server
+for it, because Firefox add-ons can't open local files.
+
 ## Uninstall
 
-Remove the symlinks the installer made and rename the `*.pre-nord-terminal.*` backups back.
+Remove the symlinks the installers made and rename the `*.pre-nord-terminal.*` and `*.pre-nord-desktop.*`
+backups back.
 
 ## Credits
 
 [Nord](https://www.nordtheme.com/) by Arctic Ice Studio and Sven Greb, including
 [nord-dircolors](https://github.com/nordtheme/dircolors) (MIT, `zsh/dircolors`). btop Nord theme by Justin Zobel.
-Neovim config built on the [NvChad starter](https://github.com/NvChad/starter).
+Neovim config built on the [NvChad starter](https://github.com/NvChad/starter). Colloid GTK and icon themes by
+[vinceliuice](https://github.com/vinceliuice). Wallpapers from
+[nordic-wallpapers](https://github.com/linuxdotexe/nordic-wallpapers) (MIT).
 Xournal++ toolbars adapted from [xournalpp-nord](https://github.com/juansegaes/xournalpp-nord) (GPL-3.0).

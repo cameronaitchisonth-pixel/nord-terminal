@@ -1,0 +1,61 @@
+/* Nord browser UI — follows the system light/dark setting.
+   Requires the "System theme — auto" theme in about:addons → Themes. */
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --nord-frame: #2E3440;  --nord-bar: #3B4252;   --nord-field: #2E3440;
+    --nord-field-focus: #434C5E;  --nord-text: #ECEFF4;  --nord-muted: #D8DEE9;
+    --nord-border: #4C566A;  --nord-accent: #88C0D0;  --nord-hover: #434C5E;
+  }
+}
+@media (prefers-color-scheme: light) {
+  :root {
+    --nord-frame: #D8DEE9;  --nord-bar: #ECEFF4;   --nord-field: #E5E9F0;
+    --nord-field-focus: #FFFFFF;  --nord-text: #2E3440;  --nord-muted: #3B4252;
+    --nord-border: #C9D0DC;  --nord-accent: #5E81AC;  --nord-hover: #D8DEE9;
+  }
+}
+
+:root {
+  /* Tab strip */
+  --toolbox-bgcolor: var(--nord-frame) !important;
+  --toolbox-bgcolor-inactive: var(--nord-frame) !important;
+  --toolbox-textcolor: var(--nord-muted) !important;
+  --toolbox-textcolor-inactive: var(--nord-muted) !important;
+  --lwt-accent-color: var(--nord-frame) !important;
+  --lwt-accent-color-inactive: var(--nord-frame) !important;
+  --lwt-text-color: var(--nord-muted) !important;
+  --tab-selected-bgcolor: var(--nord-bar) !important;
+  --tab-selected-textcolor: var(--nord-text) !important;
+  --tab-hover-background-color: var(--nord-hover) !important;
+  --tab-loading-fill: var(--nord-accent) !important;
+  --lwt-tab-line-color: var(--nord-accent) !important;
+
+  /* Navigation bar */
+  --toolbar-bgcolor: var(--nord-bar) !important;
+  --toolbar-color: var(--nord-text) !important;
+  --toolbarbutton-icon-fill: var(--nord-muted) !important;
+  --toolbarbutton-hover-background: var(--nord-hover) !important;
+  --chrome-content-separator-color: var(--nord-border) !important;
+
+  /* Address bar */
+  --toolbar-field-background-color: var(--nord-field) !important;
+  --toolbar-field-color: var(--nord-text) !important;
+  --toolbar-field-border-color: transparent !important;
+  --toolbar-field-focus-background-color: var(--nord-field-focus) !important;
+  --toolbar-field-focus-color: var(--nord-text) !important;
+  --toolbar-field-focus-border-color: var(--nord-accent) !important;
+  --focus-outline-color: var(--nord-accent) !important;
+
+  /* Menus, popups, sidebar */
+  --arrowpanel-background: var(--nord-bar) !important;
+  --arrowpanel-color: var(--nord-text) !important;
+  --arrowpanel-border-color: var(--nord-border) !important;
+  --sidebar-background-color: var(--nord-frame) !important;
+  --sidebar-text-color: var(--nord-muted) !important;
+}
+
+#navigator-toolbox { background-color: var(--nord-frame) !important; }
+
+/* Window buttons follow GNOME's button layout; hide only the empty title-bar spacer strip. */
+.titlebar-spacer { display: none !important; }

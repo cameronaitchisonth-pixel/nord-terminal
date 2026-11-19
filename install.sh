@@ -150,7 +150,7 @@ missing=()
 for cmd in ghostty tmux nvim zsh starship fzf fd rg eza bat zoxide lazygit yazi btop delta jq; do
     command -v "$cmd" >/dev/null || missing+=("$cmd")
 done
-fc-list 2>/dev/null | grep -qi "Maple Mono NF" || missing+=("font: Maple Mono NF")
+fc-list 2>/dev/null | grep -i "Maple Mono NF" >/dev/null || missing+=("font: Maple Mono NF")
 ((${#missing[@]})) && notes+=("not found (install what you use): ${missing[*]}")
 
 if ((${#notes[@]})); then

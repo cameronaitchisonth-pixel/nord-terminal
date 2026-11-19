@@ -1,0 +1,40 @@
+/* Nord Focus: splash page on covered monitors (dark = Polar Night, light = Snow Storm) */
+.nord-focus-splash {
+  background-gradient-direction: vertical;
+  background-gradient-start: #2E3440;
+  background-gradient-end: #242933;
+}
+.nord-focus-splash.light {
+  background-gradient-start: #ECEFF4;
+  background-gradient-end: #D8DEE9;
+}
+
+.nord-focus-clock {
+  font-family: Inter, sans-serif;
+  font-size: 120px;
+  font-weight: 300;
+  color: #ECEFF4;
+}
+.nord-focus-date {
+  font-family: Inter, sans-serif;
+  font-size: 22px;
+  color: #D8DEE9;
+  margin-top: 2px;
+}
+.nord-focus-rule {
+  width: 48px;
+  height: 3px;
+  border-radius: 2px;
+  background-color: #88C0D0;
+  margin: 28px 0 18px 0;
+}
+.nord-focus-status {
+  font-family: Inter, sans-serif;
+  font-size: 15px;
+  color: #81A1C1;
+}
+
+.nord-focus-splash.light .nord-focus-clock  { color: #2E3440; }
+.nord-focus-splash.light .nord-focus-date   { color: #4C566A; }
+.nord-focus-splash.light .nord-focus-rule   { background-color: #5E81AC; }
+.nord-focus-splash.light .nord-focus-status { color: #5E81AC; }

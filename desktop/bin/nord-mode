@@ -1,0 +1,120 @@
+#!/usr/bin/env bash
+# nord-mode — switch the whole desktop between Nord light and dark.
+#
+#   nord-mode light|dark|toggle   set the mode (same as the Quick Settings "Dark Style" button)
+#   nord-mode apply               re-apply the current mode to everything
+#   nord-mode status              print the current mode
+#   nord-mode watch               follow GNOME's color-scheme (run by nord-mode.service)
+#
+# GNOME's color-scheme is the single source of truth. Wallpaper, Ghostty, VS Code and
+# Firefox follow it natively; this script handles the rest of the desktop and hands the
+# terminal tools to nord-term.
+set -u
+
+# Always use the system gsettings: conda's copy (first on PATH in terminals) writes to a
+# private keyfile instead of the real GNOME settings.
+gsettings() { /usr/bin/gsettings "$@"; }
+
+IFACE=org.gnome.desktop.interface
+DOCK=org.gnome.shell.extensions.dash-to-dock
+GTK4_DIR="$HOME/.config/gtk-4.0"
+
+mode() { [[ $(gsettings get $IFACE color-scheme) == "'prefer-dark'" ]] && echo dark || echo light; }
+
+# Only write when the value differs, so the watcher doesn't react to its own changes.
+gset() { [[ "$(gsettings get "$1" "$2")" == "$3" ]] || gsettings set "$1" "$2" "$3"; }
+dset() { [[ "$(dconf read "$1")" == "$2" ]] || dconf write "$1" "$2"; }
+
+terminal_profile() {
+    local id
+    for id in $(dconf list /org/gnome/terminal/legacy/profiles:/ | grep -o '^:[^/]*'); do
+        [[ $(dconf read "/org/gnome/terminal/legacy/profiles:/$id/visible-name") == "'Nord'" ]] && {
+            echo "/org/gnome/terminal/legacy/profiles:/$id/"; return; }
+    done
+}
+
+# One apply at a time: a direct `nord-mode light` and the watcher service can overlap.
+# The lock is held only for the duration of a single apply (subshell), never by the watcher itself.
+apply() { ( flock 9; _apply ) 9>"${XDG_RUNTIME_DIR:-/tmp}/nord-mode.lock"; }
+
+_apply() {
+    local m theme icons cursor dock_bg palette bg fg cur sel_bg sel_fg
+    m=$(mode)
+    if [[ $m == dark ]]; then
+        theme=Colloid-Dark-Nord icons=Colloid-Nord-Dark cursor=Colloid-dark-cursors
+        dock_bg='#2E3440'
+        bg='#2E3440' fg='#D8DEE9' cur='#D8DEE9' sel_bg='#434C5E' sel_fg='#ECEFF4'
+        palette="['#3B4252','#BF616A','#A3BE8C','#EBCB8B','#81A1C1','#B48EAD','#88C0D0','#E5E9F0','#7B88A1','#BF616A','#A3BE8C','#EBCB8B','#81A1C1','#B48EAD','#8FBCBB','#ECEFF4']"
+    else
+        theme=Colloid-Light-Nord icons=Colloid-Nord-Light cursor=Colloid-cursors
+        dock_bg='#E5E9F0'
+        bg='#ECEFF4' fg='#2E3440' cur='#4C566A' sel_bg='#D8DEE9' sel_fg='#2E3440'
+        palette="['#3B4252','#BF616A','#6E8F53','#B3862C','#5E81AC','#9D6E96','#3E8EA0','#616E88','#4C566A','#BF616A','#6E8F53','#B3862C','#5E81AC','#9D6E96','#3E8EA0','#4C566A']"
+    fi
+
+    # GTK 3 apps, icons, cursor
+    gset $IFACE gtk-theme "'$theme'"
+    gset $IFACE icon-theme "'$icons'"
+    gset $IFACE cursor-theme "'$cursor'"
+
+    # Top bar, menus, overview (User Themes extension)
+    dset /org/gnome/shell/extensions/user-theme/name "'$theme'"
+
+    # Search Light (Super+Space launcher): Nord panel colors as RGBA 0-1
+    if [[ $m == dark ]]; then
+        dset /org/gnome/shell/extensions/search-light/background-color "(0.180, 0.204, 0.251, 0.88)"
+        dset /org/gnome/shell/extensions/search-light/text-color "(0.925, 0.937, 0.957, 1.0)"
+        dset /org/gnome/shell/extensions/search-light/border-color "(0.298, 0.337, 0.416, 1.0)"
+    else
+        dset /org/gnome/shell/extensions/search-light/background-color "(0.925, 0.937, 0.957, 0.90)"
+        dset /org/gnome/shell/extensions/search-light/text-color "(0.180, 0.204, 0.251, 1.0)"
+        dset /org/gnome/shell/extensions/search-light/border-color "(0.847, 0.871, 0.914, 1.0)"
+    fi
+
+    # Dock
+    gset $DOCK background-color "'$dock_bg'"
+
+    # libadwaita / GTK 4 apps (already-open apps pick it up when reopened)
+    local f
+    for f in gtk.css gtk-dark.css assets; do
+        if [[ $(readlink "$GTK4_DIR/$f") != "$HOME/.themes/$theme/gtk-4.0/$f" ]]; then
+            [[ -L "$GTK4_DIR/$f" ]] || rm -rf "${GTK4_DIR:?}/$f"
+            ln -sfn "$HOME/.themes/$theme/gtk-4.0/$f" "$GTK4_DIR/$f"
+        fi
+    done
+
+    # gnome-terminal: recolor the Nord profile in place (open windows update live)
+    local p; p=$(terminal_profile)
+    if [[ -n $p ]]; then
+        dset "${p}palette" "$palette"
+        dset "${p}background-color" "'$bg'"
+        dset "${p}foreground-color" "'$fg'"
+        dset "${p}bold-color" "'$fg'"
+        dset "${p}cursor-background-color" "'$cur'"
+        dset "${p}cursor-foreground-color" "'$bg'"
+        dset "${p}highlight-background-color" "'$sel_bg'"
+        dset "${p}highlight-foreground-color" "'$sel_fg'"
+    fi
+
+    # Terminal side (tmux, Neovim, zsh, Starship, bat, delta, lazygit, btop, Claude Code):
+    # nord-term from the terminal half of this repo reads the same GNOME setting
+    [[ -x $HOME/.local/bin/nord-term ]] && "$HOME/.local/bin/nord-term" apply
+}
+
+watch() {
+    apply
+    # Also re-apply if something else (e.g. Ubuntu's Appearance panel) swaps the theme back to Yaru.
+    gsettings monitor $IFACE | while read -r line; do
+        case $line in color-scheme:* | gtk-theme:* | icon-theme:*) apply ;; esac
+    done
+}
+
+case ${1:-toggle} in
+    dark)   gset $IFACE color-scheme "'prefer-dark'"; apply ;;
+    light)  gset $IFACE color-scheme "'prefer-light'"; apply ;;
+    toggle) [[ $(mode) == dark ]] && "$0" light || "$0" dark ;;
+    apply)  apply ;;
+    status) mode ;;
+    watch)  watch ;;
+    *)      echo "usage: nord-mode [light|dark|toggle|apply|status|watch]" >&2; exit 2 ;;
+esac

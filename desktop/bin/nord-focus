@@ -1,0 +1,26 @@
+#!/usr/bin/env bash
+# nord-focus — cover every monitor except the one you're working on (Nord Focus extension).
+#
+#   nord-focus [toggle]    on/off for the monitor under the pointer (same as Super+Shift+F)
+#   nord-focus on|off
+#   nord-focus splash|dim  how the other monitors are covered (clock page, or darkened)
+#   nord-focus dim 70      dim style at 70% darkness
+#   nord-focus dnd on|off  hide notification banners while focusing (default on)
+#   nord-focus status
+#
+# Pressing Super+Shift+F with the pointer on a covered monitor moves focus there;
+# double-clicking a covered monitor does the same.
+set -u
+EXT="$HOME/.local/share/gnome-shell/extensions/nord-focus@nord-terminal"
+s() { /usr/bin/gsettings --schemadir "$EXT/schemas" "$1" org.gnome.shell.extensions.nord-focus "${@:2}"; }
+
+case ${1:-toggle} in
+    toggle) [[ $(s get active) == true ]] && s set active false || s set active true ;;
+    on)     s set active true ;;
+    off)    s set active false ;;
+    splash) s set style splash ;;
+    dim)    s set style dim; [[ -n ${2:-} ]] && s set dim-opacity "$2" ;;
+    dnd)    [[ ${2:-on} == on ]] && s set do-not-disturb true || s set do-not-disturb false ;;
+    status) echo "active: $(s get active)  style: $(s get style)  dim: $(s get dim-opacity)%  dnd: $(s get do-not-disturb)" ;;
+    *)      sed -n '2,13s/^# \{0,1\}//p' "$0" >&2; exit 2 ;;
+esac

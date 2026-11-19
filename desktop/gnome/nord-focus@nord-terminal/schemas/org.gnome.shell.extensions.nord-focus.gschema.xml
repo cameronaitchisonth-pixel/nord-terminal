@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<schemalist>
+  <schema id="org.gnome.shell.extensions.nord-focus" path="/org/gnome/shell/extensions/nord-focus/">
+    <key name="toggle-focus" type="as">
+      <default><![CDATA[['<Shift><Super>f']]]></default>
+      <summary>Toggle focus mode (on a covered monitor: move focus there)</summary>
+    </key>
+    <key name="active" type="b">
+      <default>false</default>
+      <summary>Focus mode is on</summary>
+    </key>
+    <key name="style" type="s">
+      <choices><choice value="splash"/><choice value="dim"/></choices>
+      <default>'splash'</default>
+      <summary>How other monitors are covered: splash (clock page) or dim (darkened)</summary>
+    </key>
+    <key name="dim-opacity" type="i">
+      <range min="10" max="100"/>
+      <default>85</default>
+      <summary>Darkness of the dim style, in percent</summary>
+    </key>
+    <key name="do-not-disturb" type="b">
+      <default>true</default>
+      <summary>Hide notification banners while focus mode is on</summary>
+    </key>
+  </schema>
+</schemalist>

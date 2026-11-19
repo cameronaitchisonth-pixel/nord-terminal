@@ -1,0 +1,21 @@
+# light-mode wallpapers for nord-wallpaper — one file name (in ~/Pictures/Wallpapers) or full path per line, delete lines you don't like
+Abstract-Nord-light.png
+ign_bratislava.png
+ign_lighthouse.png
+ign_mountain.png
+ign_mountains.jpg
+ign_unsplash19.png
+ign_unsplash27.png
+ign_unsplash3.png
+ign_unsplash4.png
+ign_unsplash40.png
+ign_unsplash43.png
+ign_unsplash48.png
+ign_unsplash51.png
+ign_unsplash52.png
+ign_unsplash7.png
+misty_mountains.jpg
+nord_bridge.png
+nord_design.png
+subtle_ferns.jpg
+utiity.png

@@ -1,0 +1,22 @@
+{
+  "enabled": true,
+  "enabledByDefault": true,
+  "theme": {
+    "mode": 1,
+    "brightness": 100,
+    "contrast": 100,
+    "grayscale": 0,
+    "sepia": 0,
+    "engine": "dynamicTheme",
+    "darkSchemeBackgroundColor": "#2E3440",
+    "darkSchemeTextColor": "#D8DEE9",
+    "selectionColor": "auto",
+    "scrollbarColor": "auto"
+  },
+  "automation": {
+    "enabled": true,
+    "mode": "system",
+    "behavior": "OnOff"
+  },
+  "detectDarkTheme": true
+}

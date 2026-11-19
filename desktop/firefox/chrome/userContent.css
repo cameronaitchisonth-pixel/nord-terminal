@@ -1,0 +1,19 @@
+/* Nord new tab / home page — follows the system light/dark setting */
+@-moz-document url("about:newtab"), url("about:home"), url("about:blank") {
+  @media (prefers-color-scheme: dark) {
+    :root, body {
+      --newtab-background-color: #2E3440 !important;
+      --newtab-background-color-secondary: #3B4252 !important;
+      --newtab-text-primary-color: #ECEFF4 !important;
+      background-color: #2E3440 !important;
+    }
+  }
+  @media (prefers-color-scheme: light) {
+    :root, body {
+      --newtab-background-color: #ECEFF4 !important;
+      --newtab-background-color-secondary: #E5E9F0 !important;
+      --newtab-text-primary-color: #2E3440 !important;
+      background-color: #ECEFF4 !important;
+    }
+  }
+}

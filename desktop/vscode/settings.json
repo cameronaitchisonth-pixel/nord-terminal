@@ -1,0 +1,10 @@
+{
+  "//": "Merge into VS Code's settings.json. Themes: arcticicestudio.nord-visual-studio-code and huytd.nord-light",
+  "window.autoDetectColorScheme": true,
+  "workbench.colorTheme": "Nord",
+  "workbench.preferredDarkColorTheme": "Nord",
+  "workbench.preferredLightColorTheme": "Nord Light",
+  "editor.fontFamily": "'Maple Mono NF', monospace",
+  "editor.fontLigatures": true,
+  "editor.fontSize": 14
+}

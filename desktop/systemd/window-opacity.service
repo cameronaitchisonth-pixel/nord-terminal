@@ -1,0 +1,12 @@
+[Unit]
+Description=Make chosen app windows translucent (rules in ~/.config/window-opacity.conf)
+PartOf=graphical-session.target
+After=graphical-session.target
+
+[Service]
+ExecStart=%h/.local/bin/window-opacity watch
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=graphical-session.target

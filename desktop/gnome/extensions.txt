@@ -1,0 +1,10 @@
+# GNOME Shell extensions from extensions.gnome.org, one UUID per line.
+# install.sh asks GNOME to install each (GNOME shows a confirmation dialog) and enables them.
+# Ubuntu already ships Ubuntu Dock, Desktop Icons and Tiling Assistant.
+user-theme@gnome-shell-extensions.gcampax.github.com
+blur-my-shell@aunetx
+just-perfection-desktop@just-perfection
+search-light@icedman.github.com
+space-bar@luchrioh
+Vitals@CoreCoding.com
+clipboard-indicator@tudmotu.com

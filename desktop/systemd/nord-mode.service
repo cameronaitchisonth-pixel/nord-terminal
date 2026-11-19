@@ -1,0 +1,12 @@
+[Unit]
+Description=Keep the Nord theme in sync with GNOME's light/dark setting
+PartOf=graphical-session.target
+After=graphical-session.target
+
+[Service]
+ExecStart=%h/.local/bin/nord-mode watch
+Restart=on-failure
+RestartSec=2
+
+[Install]
+WantedBy=graphical-session.target

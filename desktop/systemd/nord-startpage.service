@@ -1,0 +1,13 @@
+[Unit]
+Description=Serve the Nord Firefox start page on http://127.0.0.1:8473/ (for New Tab Override)
+PartOf=graphical-session.target
+After=graphical-session.target
+
+[Service]
+# Firefox add-ons can't open file:// pages, so the new tab page needs it over http. Local only.
+ExecStart=/usr/bin/python3 -I -m http.server --bind 127.0.0.1 --directory %h/.local/share/nord-startpage 8473
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=graphical-session.target
